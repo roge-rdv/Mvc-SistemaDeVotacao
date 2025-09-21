@@ -30,6 +30,21 @@ if ($path === '') {
     require_once 'controllers/IdeiaController.php';
     $controller = new IdeiaController();
     $controller->atualizar($ideiaId);
+
+} elseif ($path === 'comentario/criar' && $_SERVER['REQUEST_METHOD'] === 'POST') {
+    // Rota para criar comentário
+    require_once 'controllers/ComentarioController.php';
+    $pdo = new PDO("mysql:host=" . DB_HOST . ";dbname=" . DB_NAME . ";charset=utf8", DB_USER, DB_PASS);
+    $controller = new ComentarioController($pdo);
+    $ideiaId = isset($_POST['ideia_id']) ? (int)$_POST['ideia_id'] : null;
+    $usuarioId = isset($_POST['usuario_id']) ? (int)$_POST['usuario_id'] : null;
+    $texto = isset($_POST['texto']) ? trim($_POST['texto']) : '';
+    if ($ideiaId && $usuarioId && $texto) {
+        $controller->criar($ideiaId, $usuarioId, $texto);
+    }
+    // Redireciona de volta para a página principal
+    header('Location: ' . BASE_URL);
+    exit();
 } else {
     // Rota não encontrada
     http_response_code(404);
