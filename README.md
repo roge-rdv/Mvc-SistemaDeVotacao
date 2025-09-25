@@ -29,7 +29,7 @@ Um sistema web completo desenvolvido em PHP usando o padrão de arquitetura MVC 
 
 ### Passo 1: Clonar o Projeto
 ```bash
-git clone https://github.com/seu-usuario/votacao-mvc.git
+git clone https://github.com/roge-rdv/Mvc-SistemaDeVotacao.git
 cd votacao-mvc
 ```
 
