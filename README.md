@@ -1,51 +1,236 @@
-# Sistema de Votação de Ideias
+# Sistema de Votação de Ideias - MVC# Sistema de Votação de Ideias
 
-Um sistema web completo desenvolvido em PHP usando o padrão de arquitetura MVC (Model-View-Controller) onde os usuários podem compartilhar ideias, votar nas suas favoritas e acompanhar as mais populares da comunidade.
+
+
+Sistema web desenvolvido seguindo o padrão arquitetural MVC (Model-View-Controller) para compartilhamento e gerenciamento de ideias.# Sistema de Votação de Ideias - MVC
+
+
+
+## 🚀 Acesso ao SistemaSistema web desenvolvido em PHP utilizando o padrão arquitetural MVC (Model-View-Controller) para gerenciamento e votação de ideias.
+
+```
+
+http://localhost/votacao-mvc/public/sistema.php## 🚀 Como Acessar
+
+```
+
+### Opção 1: Acesso pela raiz (Recomendado)
+
+## 📋 Funcionalidades```
+
+- ✅ **Listagem de Ideias** - Visualizar todas as ideias cadastradashttp://localhost/votacao-mvc/
+
+- ✅ **Cadastro de Ideias** - Adicionar novas ideias ao sistema```
+
+- ✅ **Interface Responsiva** - Layout adaptável e profissionalO sistema automaticamente redirecionará para a pasta `public`.
+
+- ✅ **Validação de Dados** - Tratamento adequado de formulários
+
+### Opção 2: Acesso direto ao public
+
+## 📁 Estrutura do Projeto```
+
+```http://localhost/votacao-mvc/public/
+
+votacao-mvc/```
+
+├── dao/                    # Data Access Objects
+
+│   ├── IIdeiaDAO.php      # Interface do DAO## 📁 Estrutura do Projeto
+
+│   └── mysql/
+
+│       └── IdeiaDAO.php   # Implementação MySQL```
+
+│votacao-mvc/
+
+├── generic/               # Classes genéricas e utilitários├── index.php              # 🎯 PONTO DE ENTRADA PRINCIPAL
+
+│   ├── Acao.php          # Sistema de ações├── .htaccess              # Segurança da raiz
+
+│   ├── Autoload.php      # Carregamento automático├── database.sql           # Script de criação do banco
+
+│   ├── Controller.php    # Controlador genérico├── README.md             # Esta documentação
+
+│   ├── MysqlFactory.php  # Factory para conexão├── INSTALACAO.md         # Guia de instalação
+
+│   └── MysqlSingleton.php # Singleton da conexão│
+
+│├── config/               # ⚙️ Configurações
+
+├── controller/            # Controladores da aplicação│   └── Database.php      # Conexão com banco de dados
+
+│   └── Ideia.php         # Controlador de ideias│
+
+│├── models/               # 📊 Modelos (Data Access Objects)
+
+├── service/               # Camada de serviços│   ├── UsuarioDAO.php    # Operações de usuários
+
+│   └── IdeiaService.php  # Serviços de ideias│   ├── IdeiaDAO.php      # Operações de ideias
+
+││   └── VotoDAO.php       # Operações de votos
+
+├── template/              # Sistema de templates│
+
+│   ├── ITemplate.php     # Interface de template├── services/             # 🔧 Serviços (Regras de Negócio)
+
+│   └── IdeiaTemp.php     # Template das ideias│   ├── UsuarioService.php # Lógica de usuários
+
+││   ├── IdeiaService.php  # Lógica de ideias
+
+├── public/                # Arquivos públicos (acessíveis via web)│   └── VotoService.php   # Lógica de votação
+
+│   ├── sistema.php       # 🎯 PONTO DE ENTRADA│
+
+│   └── ideia/├── controllers/          # 🎮 Controladores
+
+│       ├── listar.php    # View para listagem│   ├── UsuarioController.php # Controle de usuários
+
+│       └── form.php      # View para formulário│   ├── IdeiaController.php   # Controle de ideias
+
+││   └── VotoController.php    # Controle de votos
+
+└── database.sql          # Script de criação do banco│
+
+```├── views/                # 🎨 Templates
+
+│   ├── layout.php        # Layout base
+
+## 🔗 URLs do Sistema│   ├── usuarios/         # Telas de usuário
+
+- **Página Inicial:** `sistema.php`│   └── ideias/           # Telas de ideias
+
+- **Lista de Ideias:** `sistema.php?param=ideia/lista`│
+
+- **Nova Ideia:** `sistema.php?param=ideia/formulario`└── public/               # 🌐 PASTA PÚBLICA (Acessível via web)
+
+- **Cadastrar Ideia:** `sistema.php?param=ideia/inserir` (POST)    ├── index.php         # Aplicação principal
+
+    ├── .htaccess         # Configurações de URL
+
+## ⚙️ Padrões de Projeto Implementados    ├── css/              # Estilos
+
+- **📐 MVC (Model-View-Controller)** - Separação clara de responsabilidades    ├── js/               # JavaScript
+
+- **🗃️ DAO (Data Access Object)** - Encapsulamento do acesso aos dados    └── diagnostico.php   # Ferramenta de diagnóstico
+
+- **🏭 Factory Pattern** - Criação padronizada de objetos```
+
+- **👤 Singleton Pattern** - Instância única da conexão
+
+- **📄 Template Method** - Sistema flexível de templates## 🔒 Segurança
+
+
+
+## 🛠️ Tecnologias Utilizadas- ✅ Apenas a pasta `public` e o `index.php` da raiz são acessíveis via web
+
+- **PHP 7.4+** - Linguagem principal- ✅ Todas as outras pastas são protegidas por `.htaccess`
+
+- **MySQL** - Banco de dados- ✅ URLs amigáveis com mod_rewrite
+
+- **HTML5 + CSS3** - Interface do usuário- ✅ Proteção contra acesso direto aos arquivos PHP
+
+- **PDO** - Acesso ao banco de dados
+
+## 🎯 Pontos de Entrada
+
+## 📦 Instalação e Configuração
+
+1. **`/index.php`** - Ponto de entrada principal (redireciona para public)
+
+### 1. Requisitos2. **`/public/index.php`** - Aplicação MVC principal
+
+- XAMPP (Apache + MySQL + PHP)3. **`/public/diagnostico.php`** - Ferramenta de diagnóstico do sistema
+
+- Navegador web
 
 ## 🎯 Funcionalidades
 
-### Para Usuários
-- **Cadastro e Login**: Sistema de autenticação completo
-- **Gerenciar Ideias**: Criar, editar, visualizar e excluir suas próprias ideias
-- **Sistema de Votação**: Votar e remover votos em ideias de outros usuários
-- **Perfil Pessoal**: Visualizar e editar informações do perfil
+### 2. Configuração do Banco
+
+```sql### Para Usuários
+
+-- Executar no phpMyAdmin ou MySQL- **Cadastro e Login**: Sistema de autenticação completo
+
+CREATE DATABASE sistema_votacao;- **Gerenciar Ideias**: Criar, editar, visualizar e excluir suas próprias ideias
+
+-- Importar o arquivo database.sql- **Sistema de Votação**: Votar e remover votos em ideias de outros usuários
+
+```- **Perfil Pessoal**: Visualizar e editar informações do perfil
+
 - **Minhas Atividades**: Acompanhar suas ideias e votos dados
 
-### Características Técnicas
-- **Arquitetura MVC**: Organização clara e modular do código
-- **Padrão DAO**: Camada de acesso aos dados bem estruturada
-- **Services**: Regras de negócio encapsuladas
-- **Interface Responsiva**: Design moderno com Bootstrap 5
-- **AJAX**: Votação em tempo real sem recarregar a página
+### 3. Configuração da Conexão
+
+Verificar as configurações em `generic/MysqlSingleton.php`:### Características Técnicas
+
+```php- **Arquitetura MVC**: Organização clara e modular do código
+
+private $usuario = 'root';- **Padrão DAO**: Camada de acesso aos dados bem estruturada
+
+private $senha = '';- **Services**: Regras de negócio encapsuladas
+
+private $dsn = 'mysql:host=localhost;dbname=sistema_votacao;charset=utf8';- **Interface Responsiva**: Design moderno com Bootstrap 5
+
+```- **AJAX**: Votação em tempo real sem recarregar a página
+
 - **Validações**: Cliente e servidor para garantir integridade dos dados
 
-## 🚀 Instalação e Configuração
+### 4. Executar o Sistema
 
-### Pré-requisitos
+1. Copiar projeto para `C:\xampp\htdocs\votacao-mvc`## 🚀 Instalação e Configuração
+
+2. Iniciar Apache e MySQL no XAMPP
+
+3. Acessar: `http://localhost/votacao-mvc/public/sistema.php`### Pré-requisitos
+
 - PHP 7.4 ou superior
-- MySQL 5.7 ou superior
-- Servidor web (Apache/Nginx) ou PHP Built-in Server
-- Extensões PHP: PDO, PDO_MySQL
 
-### Passo 1: Clonar o Projeto
+## 🎨 Características da Interface- MySQL 5.7 ou superior
+
+- **Design Limpo** - Interface moderna e intuitiva- Servidor web (Apache/Nginx) ou PHP Built-in Server
+
+- **Responsividade** - Adaptável a diferentes tamanhos de tela- Extensões PHP: PDO, PDO_MySQL
+
+- **Feedback Visual** - Hover effects e transições suaves
+
+- **UX Otimizada** - Navegação clara e objetiva### Passo 1: Clonar o Projeto
+
 ```bash
-git clone https://github.com/seu-usuario/votacao-mvc.git
+
+## 📚 Arquitetura MVCgit clone https://github.com/seu-usuario/votacao-mvc.git
+
 cd votacao-mvc
+
+### Model (DAO + Service)```
+
+- **IdeiaDAO**: Operações de banco de dados
+
+- **IdeiaService**: Regras de negócio### Passo 2: Configurar o Banco de Dados
+
+
+
+### View (Templates + Views)1. Crie um banco de dados MySQL:
+
+- **Templates**: Estrutura HTML comum```sql
+
+- **Views**: Conteúdo específico de cada páginaCREATE DATABASE sistema_votacao CHARACTER SET utf8 COLLATE utf8_general_ci;
+
 ```
 
-### Passo 2: Configurar o Banco de Dados
+### Controller
 
-1. Crie um banco de dados MySQL:
-```sql
-CREATE DATABASE sistema_votacao CHARACTER SET utf8 COLLATE utf8_general_ci;
-```
+- **Controller genérico**: Roteamento de requisições2. Execute o script SQL fornecido:
 
-2. Execute o script SQL fornecido:
-```bash
+- **IdeiaController**: Lógica específica de ideias```bash
+
 # Via linha de comando
-mysql -u root -p sistema_votacao < database.sql
 
-# Ou via phpMyAdmin (XAMPP)
+---mysql -u root -p sistema_votacao < database.sql
+
+
+
+*Sistema desenvolvido seguindo boas práticas de desenvolvimento web e padrões de projeto consolidados.*# Ou via phpMyAdmin (XAMPP)
 # 1. Acesse http://localhost/phpmyadmin
 # 2. Clique em "Importar"
 # 3. Selecione o arquivo database.sql
@@ -209,15 +394,25 @@ votacao-mvc/
 
 ## 🌐 URLs do Sistema
 
-### Usuários
+### URLs Amigáveis (com .htaccess)
 - `/` - Página inicial
+- `/login` - Login
+- `/cadastro` - Cadastro
+- `/perfil` - Perfil do usuário
+- `/logout` - Sair do sistema
+- `/nova-ideia` - Criar nova ideia
+- `/minhas-ideias` - Minhas ideias
+- `/meus-votos` - Meus votos
+- `/ideia/visualizar/ID` - Ver ideia específica
+- `/ideia/editar/ID` - Editar ideia
+- `/ideia/excluir/ID` - Excluir ideia
+
+### URLs Tradicionais (compatibilidade)
 - `/?controller=usuario&action=cadastrar` - Cadastro
 - `/?controller=usuario&action=login` - Login
 - `/?controller=usuario&action=perfil` - Perfil do usuário
 - `/?controller=usuario&action=minhasIdeias` - Minhas ideias
 - `/?controller=usuario&action=meusVotos` - Meus votos
-
-### Ideias
 - `/?controller=ideia&action=criar` - Criar nova ideia
 - `/?controller=ideia&action=visualizar&id=X` - Ver ideia
 - `/?controller=ideia&action=editar&id=X` - Editar ideia
