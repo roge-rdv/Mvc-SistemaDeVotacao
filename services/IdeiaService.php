@@ -1,113 +1,134 @@
 <?php
-require_once __DIR__ . '/../models/Ideia.php';
-use Models\Ideia;
 
-class IdeiaService
-{
-    private $pdo;
-
-    /**
-     * Exclui uma ideia do banco de dados.
-     * @param int $id ID da ideia
-     * @return bool
-     */
-    public function excluirIdeia($id)
-    {
-        try {
-            $sql = "DELETE FROM ideias WHERE id = :id";
-            $stmt = $this->pdo->prepare($sql);
-            $stmt->bindParam(':id', $id, PDO::PARAM_INT);
-            return $stmt->execute();
-        } catch (PDOException $e) {
-            die("Erro ao excluir a ideia: " . $e->getMessage());
-            return false;
+class IdeiaService {
+    private $ideiaDAO;
+    private $votoDAO;
+    
+    public function __construct() {
+        $this->ideiaDAO = new IdeiaDAO();
+        $this->votoDAO = new VotoDAO();
+    }
+    
+    public function criar($titulo, $descricao, $usuario_id) {
+        // Validações
+        $erros = [];
+        
+        if (empty($titulo)) {
+            $erros[] = "Título é obrigatório";
+        } elseif (strlen($titulo) > 150) {
+            $erros[] = "Título deve ter no máximo 150 caracteres";
+        }
+        
+        if (empty($descricao)) {
+            $erros[] = "Descrição é obrigatória";
+        } elseif (strlen($descricao) < 10) {
+            $erros[] = "Descrição deve ter pelo menos 10 caracteres";
+        }
+        
+        if (empty($usuario_id)) {
+            $erros[] = "Usuário não identificado";
+        }
+        
+        if (!empty($erros)) {
+            return ['sucesso' => false, 'erros' => $erros];
+        }
+        
+        // Criar ideia
+        $sucesso = $this->ideiaDAO->criar($titulo, $descricao, $usuario_id);
+        
+        if ($sucesso) {
+            return ['sucesso' => true, 'mensagem' => 'Ideia criada com sucesso'];
+        } else {
+            return ['sucesso' => false, 'erros' => ['Erro ao criar ideia']];
         }
     }
-
-    public function __construct()
-    {
-        // Inclui a configuração e estabelece a conexão PDO
-        // Usar require_once para evitar que as constantes sejam definidas múltiplas vezes
-        require_once __DIR__ . '/../config.php';
-        try {
-            $this->pdo = new PDO(
-                "mysql:host=" . DB_HOST . ";dbname=" . DB_NAME . ";charset=utf8",
-                DB_USER,
-                DB_PASS
-            );
-            $this->pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-        } catch (PDOException $e) {
-            die("Erro na conexão com o banco de dados: " . $e->getMessage());
+    
+    public function listarTodas() {
+        $ideias = $this->ideiaDAO->listarTodas();
+        
+        // Para cada ideia, verifica se o usuário logado já votou
+        if (isset($_SESSION['usuario_id'])) {
+            foreach ($ideias as &$ideia) {
+                $ideia['usuario_ja_votou'] = $this->votoDAO->verificarVoto($_SESSION['usuario_id'], $ideia['id']);
+            }
         }
-    }
-
-    /**
-     * Busca todas as ideias no banco de dados.
-     * @return Ideia[]
-     */
-    public function buscarTodas()
-    {
-        $sql = "SELECT * FROM ideias ORDER BY id DESC";
-        $stmt = $this->pdo->query($sql);
-
-        $ideias = [];
-        while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-            $ideia = new Ideia();
-            $ideia->id = $row['id'];
-            $ideia->titulo = $row['titulo'];
-            $ideia->descricao = $row['descricao'];
-            $ideia->usuario_id = $row['usuario_id'];
-            $ideias[] = $ideia;
-        }
-
+        
         return $ideias;
     }
     
-    /**
-     * Cria uma nova ideia no banco de dados.
-     * @param string $titulo O título da ideia.
-     * @param string $descricao A descrição da ideia.
-     * @param int $usuarioId O ID do usuário que criou a ideia.
-     * @return bool Retorna true em caso de sucesso, false em caso de falha.
-     */
-    public function criarIdeia($titulo, $descricao, $usuarioId)
-    {
-        try {
-            $sql = "INSERT INTO ideias (titulo, descricao, usuario_id) VALUES (:titulo, :descricao, :usuario_id)";
-            $stmt = $this->pdo->prepare($sql);
-            $stmt->bindParam(':titulo', $titulo, PDO::PARAM_STR);
-            $stmt->bindParam(':descricao', $descricao, PDO::PARAM_STR);
-            $stmt->bindParam(':usuario_id', $usuarioId, PDO::PARAM_INT);
-            return $stmt->execute();
-        } catch (PDOException $e) {
-            // Em um aplicativo real, você faria o log do erro em vez de usar die()
-            die("Erro ao criar a ideia: " . $e->getMessage());
-            return false;
+    public function buscarPorId($id) {
+        $ideia = $this->ideiaDAO->buscarPorId($id);
+        
+        if ($ideia && isset($_SESSION['usuario_id'])) {
+            $ideia['usuario_ja_votou'] = $this->votoDAO->verificarVoto($_SESSION['usuario_id'], $id);
+        }
+        
+        return $ideia;
+    }
+    
+    public function listarPorUsuario($usuario_id) {
+        return $this->ideiaDAO->listarPorUsuario($usuario_id);
+    }
+    
+    public function atualizar($id, $titulo, $descricao, $usuario_id) {
+        // Validações
+        $erros = [];
+        
+        if (empty($titulo)) {
+            $erros[] = "Título é obrigatório";
+        } elseif (strlen($titulo) > 150) {
+            $erros[] = "Título deve ter no máximo 150 caracteres";
+        }
+        
+        if (empty($descricao)) {
+            $erros[] = "Descrição é obrigatória";
+        } elseif (strlen($descricao) < 10) {
+            $erros[] = "Descrição deve ter pelo menos 10 caracteres";
+        }
+        
+        // Verifica se o usuário é o proprietário da ideia
+        if (!$this->ideiaDAO->verificarProprietario($id, $usuario_id)) {
+            $erros[] = "Você não tem permissão para editar esta ideia";
+        }
+        
+        if (!empty($erros)) {
+            return ['sucesso' => false, 'erros' => $erros];
+        }
+        
+        // Atualizar ideia
+        $sucesso = $this->ideiaDAO->atualizar($id, $titulo, $descricao);
+        
+        if ($sucesso) {
+            return ['sucesso' => true, 'mensagem' => 'Ideia atualizada com sucesso'];
+        } else {
+            return ['sucesso' => false, 'erros' => ['Erro ao atualizar ideia']];
         }
     }
-
-    /**
-     * Atualiza uma ideia existente no banco de dados.
-     * @param int $id ID da ideia
-     * @param string $titulo Novo título
-     * @param string $descricao Nova descrição
-     * @param int $usuarioId ID do usuário
-     * @return bool
-     */
-    public function atualizarIdeia($id, $titulo, $descricao, $usuarioId)
-    {
-        try {
-            $sql = "UPDATE ideias SET titulo = :titulo, descricao = :descricao, usuario_id = :usuario_id WHERE id = :id";
-            $stmt = $this->pdo->prepare($sql);
-            $stmt->bindParam(':titulo', $titulo, PDO::PARAM_STR);
-            $stmt->bindParam(':descricao', $descricao, PDO::PARAM_STR);
-            $stmt->bindParam(':usuario_id', $usuarioId, PDO::PARAM_INT);
-            $stmt->bindParam(':id', $id, PDO::PARAM_INT);
-            return $stmt->execute();
-        } catch (PDOException $e) {
-            die("Erro ao atualizar a ideia: " . $e->getMessage());
-            return false;
+    
+    public function excluir($id, $usuario_id) {
+        // Verifica se o usuário é o proprietário da ideia
+        if (!$this->ideiaDAO->verificarProprietario($id, $usuario_id)) {
+            return ['sucesso' => false, 'erros' => ['Você não tem permissão para excluir esta ideia']];
         }
+        
+        $sucesso = $this->ideiaDAO->excluir($id);
+        
+        if ($sucesso) {
+            return ['sucesso' => true, 'mensagem' => 'Ideia excluída com sucesso'];
+        } else {
+            return ['sucesso' => false, 'erros' => ['Erro ao excluir ideia']];
+        }
+    }
+    
+    public function buscarComDetalhes($id) {
+        $ideia = $this->buscarPorId($id);
+        
+        if ($ideia) {
+            // Busca os votantes desta ideia
+            $ideia['votantes'] = $this->votoDAO->listarVotantesDeIdeia($id);
+        }
+        
+        return $ideia;
     }
 }
-
+?>

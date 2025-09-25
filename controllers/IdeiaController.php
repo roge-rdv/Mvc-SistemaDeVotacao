@@ -1,87 +1,170 @@
-
 <?php
-require_once __DIR__ . '/../services/IdeiaService.php';
 
-class IdeiaController
-{
+class IdeiaController {
     private $ideiaService;
-
-    public function __construct()
-    {
-    $this->ideiaService = new IdeiaService();
+    private $usuarioService;
+    
+    public function __construct() {
+        $this->ideiaService = new IdeiaService();
+        $this->usuarioService = new UsuarioService();
     }
-
-    public function listar()
-    {
-        $ideias = $this->ideiaService->buscarTodas();
-        require __DIR__ . '/../views/ideia/listar.php';
+    
+    // Método home (alias para index)
+    public function home() {
+        $this->index();
     }
-
-    public function criar()
-    {
-        if (isset($_POST['titulo']) && isset($_POST['descricao'])) {
-            $titulo = trim($_POST['titulo']);
-            $descricao = trim($_POST['descricao']);
-            if (!empty($titulo) && !empty($descricao)) {
-                $usuarioId = 1;
-                $this->ideiaService->criarIdeia($titulo, $descricao, $usuarioId);
+    
+    // Página inicial - listar todas as ideias
+    public function index() {
+        $ideias = $this->ideiaService->listarTodas();
+        $usuario_logado = $this->usuarioService->obterUsuarioLogado();
+        
+        include '../views/ideias/index.php';
+    }
+    
+    // Exibir formulário de criação de ideia
+    public function criar() {
+        if (!$this->usuarioService->verificarAutenticacao()) {
+            header('Location: index.php?controller=usuario&action=login');
+            exit;
+        }
+        
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $titulo = $_POST['titulo'] ?? '';
+            $descricao = $_POST['descricao'] ?? '';
+            $usuario_logado = $this->usuarioService->obterUsuarioLogado();
+            
+            $resultado = $this->ideiaService->criar($titulo, $descricao, $usuario_logado['id']);
+            
+            if ($resultado['sucesso']) {
+                $_SESSION['mensagem_sucesso'] = $resultado['mensagem'];
+                header('Location: index.php');
+                exit;
+            } else {
+                $erros = $resultado['erros'];
             }
         }
-        header('Location: ' . BASE_URL);
-        exit();
+        
+        include '../views/ideias/criar.php';
     }
-
-    public function editar($id)
-    {
-        $ideia = null;
-        $todas = $this->ideiaService->buscarTodas();
-        foreach ($todas as $item) {
-            if ($item->id == $id) {
-                $ideia = $item;
-                break;
+    
+    // Visualizar detalhes de uma ideia
+    public function visualizar() {
+        $id = $_GET['id'] ?? null;
+        
+        if (!$id) {
+            header('Location: index.php');
+            exit;
+        }
+        
+        $ideia = $this->ideiaService->buscarComDetalhes($id);
+        
+        if (!$ideia) {
+            $_SESSION['mensagem_erro'] = 'Ideia não encontrada';
+            header('Location: index.php');
+            exit;
+        }
+        
+        $usuario_logado = $this->usuarioService->obterUsuarioLogado();
+        
+        include '../views/ideias/visualizar.php';
+    }
+    
+    // Editar ideia
+    public function editar() {
+        if (!$this->usuarioService->verificarAutenticacao()) {
+            header('Location: index.php?controller=usuario&action=login');
+            exit;
+        }
+        
+        $id = $_GET['id'] ?? null;
+        $usuario_logado = $this->usuarioService->obterUsuarioLogado();
+        
+        if (!$id) {
+            header('Location: index.php');
+            exit;
+        }
+        
+        $ideia = $this->ideiaService->buscarPorId($id);
+        
+        if (!$ideia || $ideia['usuario_id'] != $usuario_logado['id']) {
+            $_SESSION['mensagem_erro'] = 'Você não tem permissão para editar esta ideia';
+            header('Location: index.php');
+            exit;
+        }
+        
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $titulo = $_POST['titulo'] ?? '';
+            $descricao = $_POST['descricao'] ?? '';
+            
+            $resultado = $this->ideiaService->atualizar($id, $titulo, $descricao, $usuario_logado['id']);
+            
+            if ($resultado['sucesso']) {
+                $_SESSION['mensagem_sucesso'] = $resultado['mensagem'];
+                header('Location: index.php?controller=ideia&action=visualizar&id=' . $id);
+                exit;
+            } else {
+                $erros = $resultado['erros'];
             }
         }
-        if ($ideia) {
-            require __DIR__ . '/../views/ideia/editar.php';
-        } else {
-            echo '<h2>Ideia não encontrada!</h2>';
-        }
+        
+        include '../views/ideias/editar.php';
     }
-
-    public function atualizar($id)
-    {
-        if (isset($_POST['titulo']) && isset($_POST['descricao'])) {
-            $titulo = trim($_POST['titulo']);
-            $descricao = trim($_POST['descricao']);
-            $todas = $this->ideiaService->buscarTodas();
-            foreach ($todas as $item) {
-                if ($item->id == $id) {
-                    $usuarioId = $item->usuario_id;
-                    $this->ideiaService->atualizarIdeia($id, $titulo, $descricao, $usuarioId);
-                    break;
-                }
-            }
+    
+    // Excluir ideia
+    public function excluir() {
+        if (!$this->usuarioService->verificarAutenticacao()) {
+            header('Location: index.php?controller=usuario&action=login');
+            exit;
         }
-        header('Location: ' . BASE_URL);
-        exit();
+        
+        $id = $_GET['id'] ?? null;
+        $usuario_logado = $this->usuarioService->obterUsuarioLogado();
+        
+        if (!$id) {
+            header('Location: index.php');
+            exit;
+        }
+        
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $resultado = $this->ideiaService->excluir($id, $usuario_logado['id']);
+            
+            if ($resultado['sucesso']) {
+                $_SESSION['mensagem_sucesso'] = $resultado['mensagem'];
+            } else {
+                $_SESSION['mensagem_erro'] = implode(', ', $resultado['erros']);
+            }
+            
+            header('Location: index.php');
+            exit;
+        }
+        
+        $ideia = $this->ideiaService->buscarPorId($id);
+        
+        if (!$ideia || $ideia['usuario_id'] != $usuario_logado['id']) {
+            $_SESSION['mensagem_erro'] = 'Você não tem permissão para excluir esta ideia';
+            header('Location: index.php');
+            exit;
+        }
+        
+        include '../views/ideias/excluir.php';
     }
-
-    // Método para excluir uma ideia
-    public function excluir($id)
-    {
-        $usuarioLogadoId = $_SESSION['usuario_id'] ?? null;
-        $isAdmin = $_SESSION['is_admin'] ?? 0;
-        $todas = $this->ideiaService->buscarTodas();
-        foreach ($todas as $item) {
-            if ($item->id == $id) {
-                if ($usuarioLogadoId == $item->usuario_id || $isAdmin) {
-                    $this->ideiaService->excluirIdeia($id);
-                }
-                break;
-            }
+    
+    // Buscar ideias
+    public function buscar() {
+        $termo = $_GET['q'] ?? '';
+        
+        if (empty($termo)) {
+            header('Location: index.php');
+            exit;
         }
-        header('Location: ' . BASE_URL);
-        exit();
+        
+        // Aqui poderia implementar uma busca mais sofisticada
+        // Por enquanto, listaremos todas e deixaremos o JS filtrar
+        $ideias = $this->ideiaService->listarTodas();
+        $usuario_logado = $this->usuarioService->obterUsuarioLogado();
+        
+        include '../views/ideias/buscar.php';
     }
 }
-
+?>
