@@ -1,12 +1,28 @@
 <?php
-
-
 require_once __DIR__ . '/../models/Ideia.php';
 use Models\Ideia;
 
 class IdeiaService
 {
     private $pdo;
+
+    /**
+     * Exclui uma ideia do banco de dados.
+     * @param int $id ID da ideia
+     * @return bool
+     */
+    public function excluirIdeia($id)
+    {
+        try {
+            $sql = "DELETE FROM ideias WHERE id = :id";
+            $stmt = $this->pdo->prepare($sql);
+            $stmt->bindParam(':id', $id, PDO::PARAM_INT);
+            return $stmt->execute();
+        } catch (PDOException $e) {
+            die("Erro ao excluir a ideia: " . $e->getMessage());
+            return false;
+        }
+    }
 
     public function __construct()
     {

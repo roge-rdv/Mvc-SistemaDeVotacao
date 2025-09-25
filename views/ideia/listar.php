@@ -39,9 +39,37 @@
                         <p><?php echo htmlspecialchars($ideia->descricao); ?></p>
                         <small>Enviada pelo Usuário ID: <?php echo $ideia->usuario_id; ?></small>
                         <br>
+                        <?php
+                        // Votação
+                        require_once __DIR__ . '/../../config.php';
+                        $pdo = new PDO("mysql:host=" . DB_HOST . ";dbname=" . DB_NAME . ";charset=utf8", DB_USER, DB_PASS);
+                        require_once __DIR__ . '/../../controllers/VotoController.php';
+                        $votoController = new VotoController($pdo);
+                        $usuarioId = 1; // Troque pelo usuário logado
+                        $jaVotou = $votoController->jaVotou($usuarioId, $ideia->id);
+                        $totalVotos = $votoController->contarVotos($ideia->id);
+                        ?>
+                        <form method="POST" action="<?php echo BASE_URL . ($jaVotou ? '/voto/desvotar' : '/voto/votar'); ?>" style="display:inline;">
+                            <input type="hidden" name="ideia_id" value="<?php echo $ideia->id; ?>">
+                            <input type="hidden" name="usuario_id" value="<?php echo $usuarioId; ?>">
+                            <button type="submit" style="background:<?php echo $jaVotou ? '#aaa' : '#5a2d82'; ?>;color:white;padding:6px 12px;border:none;border-radius:4px;">
+                                <?php echo $jaVotou ? 'Desvotar' : 'Votar'; ?>
+                            </button>
+                        </form>
+                        <span style="margin-left:10px;color:#5a2d82;font-weight:bold;">Votos: <?php echo $totalVotos; ?></span>
+                        <?php
+                        // session_start(); // Removido: sessão já iniciada em index.php
+                        $usuarioLogadoId = $_SESSION['usuario_id'] ?? null;
+                        $isAdmin = $_SESSION['is_admin'] ?? 0;
+                        if ($usuarioLogadoId == $ideia->usuario_id || $isAdmin) {
+                        ?>
                         <a href="<?php echo BASE_URL . '/ideia/editar/' . $ideia->id; ?>">
                             <button type="button">Editar</button>
                         </a>
+                        <form method="POST" action="<?php echo BASE_URL . '/ideia/excluir/' . $ideia->id; ?>" style="display:inline;">
+                            <button type="submit" onclick="return confirm('Tem certeza que deseja excluir esta ideia?');" style="background:#c0392b;margin-left:8px;">Excluir</button>
+                        </form>
+                        <?php } ?>
                         <!-- Comentários -->
                         <div class="comentarios" style="margin-top:20px;">
                             <h4 style="color:#5a2d82;">Comentários</h4>
